@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) exit;
 
 //using namespace so we don't have to prefix every single function
 //without namespace, functions are defined globally, which can cause unexpected name collisions

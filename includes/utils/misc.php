@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) exit;
 
 //misc project-agnostic utility functions.
 namespace ImagePointe\Utils\Misc;

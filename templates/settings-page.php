@@ -1,3 +1,7 @@
+<?php
+if (!defined('ABSPATH')) exit;
+?>
+
 <div class="my-test-class">
     <h1><?php
 

@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) exit;
 
 //reusable, project-agnostic functions for rendering basic versions of each input type.
 namespace ImagePointe\Utils\Fields;
