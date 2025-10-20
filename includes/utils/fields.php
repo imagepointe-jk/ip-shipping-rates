@@ -1,8 +1,9 @@
 <?php
-if (!defined('ABSPATH')) exit;
-
 //reusable, project-agnostic functions for rendering basic versions of each input type.
 namespace ImagePointe\Utils\Fields;
+
+if (!defined('ABSPATH')) exit;
+
 
 use function ImagePointe\Utils\Misc\try_get_option_value;
 

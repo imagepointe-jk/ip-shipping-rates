@@ -1,7 +1,8 @@
 <?php
-if (!defined('ABSPATH')) exit;
 
 namespace IPShippingRates;
+
+if (!defined('ABSPATH')) exit;
 
 class Constants
 {

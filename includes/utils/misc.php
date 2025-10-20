@@ -1,8 +1,8 @@
 <?php
-if (!defined('ABSPATH')) exit;
-
 //misc project-agnostic utility functions.
 namespace ImagePointe\Utils\Misc;
+
+if (!defined('ABSPATH')) exit;
 
 if (!function_exists(__NAMESPACE__ . '\try_get_option_value')) {
     function try_get_option_value(string $setting_name, string $option_name)
