@@ -109,19 +109,33 @@ function ip_shipping_method_init()
         $services = [
             array(
                 'code' => '03',
-                'description' => 'UPS Ground'
+                'description' => 'UPS Ground',
+                'enabled' => try_get_option_value('ups_ground_enabled', Constants::WP_OPTION_NAME)
             ),
             array(
                 'code' => '01',
-                'description' => 'UPS Next Day Air'
+                'description' => 'UPS Next Day Air',
+                'enabled' => try_get_option_value('ups_next_day_air_enabled', Constants::WP_OPTION_NAME)
             ),
             array(
                 'code' => '12',
-                'description' => 'UPS 3 Day Select'
+                'description' => 'UPS 3 Day Select',
+                'enabled' => try_get_option_value('ups_3_day_select_enabled', Constants::WP_OPTION_NAME)
             ),
             array(
                 'code' => '02',
-                'description' => 'UPS 2nd Day Air'
+                'description' => 'UPS 2nd Day Air',
+                'enabled' => try_get_option_value('ups_2nd_day_air_enabled', Constants::WP_OPTION_NAME)
+            ),
+            array(
+                'code' => '11',
+                'description' => 'UPS Standard',
+                'enabled' => try_get_option_value('ups_standard_enabled', Constants::WP_OPTION_NAME)
+            ),
+            array(
+                'code' => '07',
+                'description' => 'UPS Worldwide Express',
+                'enabled' => try_get_option_value('ups_worldwide_express_enabled', Constants::WP_OPTION_NAME)
             ),
         ];
         return $services;
@@ -136,10 +150,12 @@ function ip_shipping_method_init()
         $state = $destination['state'];
         $country = $destination['country'];
         $postcode = $destination['postcode'];
-        $services = get_ups_services();
+        $enabled_services = array_filter(get_ups_services(), function ($s) {
+            return !!$s['enabled'];
+        });
 
         $body = [];
-        foreach ($services as $service) {
+        foreach ($enabled_services as $service) {
             $body[] =  array(
                 'RateRequest' => array(
                     'Request' => array(
