@@ -1,6 +1,10 @@
 <?php
+
+use IPShippingRates\Constants;
+
 if (!defined('ABSPATH')) exit;
 
+use function ImagePointe\Utils\Misc\try_get_option_value;
 
 add_action('woocommerce_shipping_init', 'ip_shipping_method_init');
 function ip_shipping_method_init()
@@ -31,110 +35,21 @@ function ip_shipping_method_init()
 
         public function calculate_shipping($package = array())
         {
-            //$package contains the shipping info input by the user.
-            $destination = $package['destination'];
-            $address = $destination['address'];
-            $address2 = isset($destination['address2']) ? $destination['address2'] : '';
-            $city = $destination['city'];
-            $state = $destination['state'];
-            $country = $destination['country'];
-            $postcode = $destination['postcode'];
-
             //Outputs the package array into WooCommerce -> Status -> Logs if necessary, using the WooCommerce Logger
             $logger = wc_get_logger();
-            // $logger->info(print_r($package, true), ['source' => 'custom_shipping_debug']);
+            // $logger->info(print_r($package, true), ['source' => 'ip_shipping_debug']);
 
-            $api_url = 'http://localhost:3000/api/shipping/ups/rate/batch';
-
-            $services = [
-                array(
-                    'code' => '03',
-                    'description' => 'UPS Ground'
-                ),
-                array(
-                    'code' => '01',
-                    'description' => 'UPS Next Day Air'
-                ),
-                array(
-                    'code' => '12',
-                    'description' => 'UPS 3 Day Select'
-                ),
-                array(
-                    'code' => '02',
-                    'description' => 'UPS 2nd Day Air'
-                ),
-            ];
-
-            $body = [];
-            foreach ($services as $service) {
-                $body[] =  array(
-                    'RateRequest' => array(
-                        'Request' => array(
-                            'RequestOption' => 'Rate'
-                        ),
-                        'Shipment' => array(
-                            'Shipper' => array(
-                                'Name' => 'Image Pointe',
-                                'ShipperNumber' => 'Not Yet Set',
-                                'Address' => array(
-                                    'AddressLine' => ['1224 La Porte Rd'],
-                                    'City' => 'Waterloo',
-                                    'StateProvinceCode' => 'IA',
-                                    'PostalCode' => '50702',
-                                    'CountryCode' => 'US'
-                                ),
-                            ),
-                            'ShipFrom' => array(
-                                'Name' => 'Image Pointe',
-                                'Address' => array(
-                                    'AddressLine' => ['2795 Airline Circle'],
-                                    'City' => 'Waterloo',
-                                    'StateProvinceCode' => 'IA',
-                                    'PostalCode' => '50703',
-                                    'CountryCode' => 'US'
-                                ),
-                            ),
-                            'ShipTo' => array(
-                                'Name' => '',
-                                'Address' => array(
-                                    'AddressLine' => [$address, $address2],
-                                    'City' => $city,
-                                    'StateProvinceCode' => $state,
-                                    'PostalCode' => $postcode,
-                                    'CountryCode' => $country
-                                ),
-                            ),
-                            'NumOfPieces' => '1',
-                            'Package' => array(
-                                'PackagingType' => array(
-                                    'Code' => '02',
-                                    'Description' => 'Packaging'
-                                ),
-                                'PackageWeight' => array(
-                                    'UnitOfMeasurement' => array(
-                                        'Code' => 'LBS',
-                                        'Description' => 'Pounds'
-                                    ),
-                                    'Weight' => '0.02'
-                                )
-                            ),
-                            'PaymentDetails' => array(
-                                'ShipmentCharge' => array(
-                                    'Type' => '01',
-                                    'BillShipper' => array(
-                                        'AccountNumber' => 'Not Yet Set'
-                                    )
-                                )
-                            ),
-                            'Service' => array(
-                                'Code' => $service['code'],
-                                'Description' => $service['description']
-                            )
-                        )
-                    ),
-                );
+            $proxy_api_url = try_get_option_value('proxy_api_url', Constants::WP_OPTION_NAME);
+            if (!$proxy_api_url) {
+                $logger->warning('The proxy API URL is empty.', ['source' => 'ip_shipping_debug']);
+                return;
             }
 
+            $api_url = $proxy_api_url . '/api/shipping/ups/rate/batch';
+            $services = get_ups_services();
+
+            //$package contains the shipping info input by the user.
+            $body = build_request_body($package);
             $response = wp_remote_post($api_url, array(
                 'headers' => array('Content-Type' => 'application/json'),
                 'body' => wp_json_encode($body),
@@ -142,13 +57,13 @@ function ip_shipping_method_init()
             ));
 
             if (is_wp_error($response)) {
-                $logger->info('API request failed: ' . $response->get_error_message(), ['source' => 'custom_shipping_debug']);
+                $logger->info('API request failed: ' . $response->get_error_message(), ['source' => 'ip_shipping_debug']);
                 return;
             }
 
             $status_code = wp_remote_retrieve_response_code($response);
             if ($status_code !== 200) {
-                $logger->info('API request failed: Status ' . $status_code, ['source' => 'custom_shipping_debug']);
+                $logger->info('API request failed: Status ' . $status_code, ['source' => 'ip_shipping_debug']);
                 return;
             }
 
@@ -187,5 +102,112 @@ function ip_shipping_method_init()
     {
         $methods['custom_option'] = 'WC_Shipping_Custom_Option';
         return $methods;
+    }
+
+    function get_ups_services()
+    {
+        $services = [
+            array(
+                'code' => '03',
+                'description' => 'UPS Ground'
+            ),
+            array(
+                'code' => '01',
+                'description' => 'UPS Next Day Air'
+            ),
+            array(
+                'code' => '12',
+                'description' => 'UPS 3 Day Select'
+            ),
+            array(
+                'code' => '02',
+                'description' => 'UPS 2nd Day Air'
+            ),
+        ];
+        return $services;
+    }
+
+    function build_request_body($package)
+    {
+        $destination = $package['destination'];
+        $address = $destination['address'];
+        $address2 = isset($destination['address2']) ? $destination['address2'] : '';
+        $city = $destination['city'];
+        $state = $destination['state'];
+        $country = $destination['country'];
+        $postcode = $destination['postcode'];
+        $services = get_ups_services();
+
+        $body = [];
+        foreach ($services as $service) {
+            $body[] =  array(
+                'RateRequest' => array(
+                    'Request' => array(
+                        'RequestOption' => 'Rate'
+                    ),
+                    'Shipment' => array(
+                        'Shipper' => array(
+                            'Name' => 'Image Pointe',
+                            'ShipperNumber' => 'Not Yet Set',
+                            'Address' => array(
+                                'AddressLine' => ['1224 La Porte Rd'],
+                                'City' => 'Waterloo',
+                                'StateProvinceCode' => 'IA',
+                                'PostalCode' => '50702',
+                                'CountryCode' => 'US'
+                            ),
+                        ),
+                        'ShipFrom' => array(
+                            'Name' => 'Image Pointe',
+                            'Address' => array(
+                                'AddressLine' => ['2795 Airline Circle'],
+                                'City' => 'Waterloo',
+                                'StateProvinceCode' => 'IA',
+                                'PostalCode' => '50703',
+                                'CountryCode' => 'US'
+                            ),
+                        ),
+                        'ShipTo' => array(
+                            'Name' => '',
+                            'Address' => array(
+                                'AddressLine' => [$address, $address2],
+                                'City' => $city,
+                                'StateProvinceCode' => $state,
+                                'PostalCode' => $postcode,
+                                'CountryCode' => $country
+                            ),
+                        ),
+                        'NumOfPieces' => '1',
+                        'Package' => array(
+                            'PackagingType' => array(
+                                'Code' => '02',
+                                'Description' => 'Packaging'
+                            ),
+                            'PackageWeight' => array(
+                                'UnitOfMeasurement' => array(
+                                    'Code' => 'LBS',
+                                    'Description' => 'Pounds'
+                                ),
+                                'Weight' => '0.02'
+                            )
+                        ),
+                        'PaymentDetails' => array(
+                            'ShipmentCharge' => array(
+                                'Type' => '01',
+                                'BillShipper' => array(
+                                    'AccountNumber' => 'Not Yet Set'
+                                )
+                            )
+                        ),
+                        'Service' => array(
+                            'Code' => $service['code'],
+                            'Description' => $service['description']
+                        )
+                    )
+                ),
+            );
+        }
+
+        return $body;
     }
 }

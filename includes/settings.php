@@ -37,11 +37,11 @@ function settings_init()
     //the field has to be registered to make it available to Settings API
     add_settings_field(
         //unique id for field
-        id: Constants::SLUG . '_custom_text',
+        id: Constants::SLUG . '_proxy_api_url',
         //this will be rendered as the label of the field
-        title: 'My Custom Text Field',
+        title: 'Proxy API URL',
         //this callback will render the markup for the field itself (but not the label or the surrounding markup used for layout)
-        callback: __NAMESPACE__ . '\\custom_text_field_1',
+        callback: __NAMESPACE__ . '\\proxy_api_url_field',
         //what page the field will be on
         page: Constants::SLUG,
         //what section the field will be in
@@ -52,10 +52,10 @@ function settings_init()
 }
 add_action('admin_init', __NAMESPACE__ . '\\settings_init');
 
-function custom_text_field_1()
+function proxy_api_url_field()
 {
     text_field(
-        db_setting_name: 'custom_text',
+        db_setting_name: 'proxy_api_url',
         db_option_name: Constants::WP_OPTION_NAME
     );
 }
