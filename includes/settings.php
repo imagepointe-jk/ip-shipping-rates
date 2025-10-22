@@ -104,6 +104,34 @@ function settings_init()
         page: Constants::SLUG,
         section: $ups_section_name,
     );
+    add_settings_field(
+        id: Constants::SLUG . '_ups_surepost_canada_enabled',
+        title: 'UPS SurePost (Canada)',
+        callback: __NAMESPACE__ . '\\ups_surepost_canada_checkbox',
+        page: Constants::SLUG,
+        section: $ups_section_name,
+    );
+    add_settings_field(
+        id: Constants::SLUG . '_ups_worldwide_expedited_enabled',
+        title: 'UPS Worldwide Expedited',
+        callback: __NAMESPACE__ . '\\ups_worldwide_expedited_checkbox',
+        page: Constants::SLUG,
+        section: $ups_section_name,
+    );
+    add_settings_field(
+        id: Constants::SLUG . '_ups_worldwide_express_plus_enabled',
+        title: 'UPS Worldwide Express Plus',
+        callback: __NAMESPACE__ . '\\ups_worldwide_express_plus_checkbox',
+        page: Constants::SLUG,
+        section: $ups_section_name,
+    );
+    add_settings_field(
+        id: Constants::SLUG . '_ups_worldwide_saver_enabled',
+        title: 'UPS Worldwide Saver',
+        callback: __NAMESPACE__ . '\\ups_worldwide_saver_checkbox',
+        page: Constants::SLUG,
+        section: $ups_section_name,
+    );
 
     register_setting(Constants::WP_OPTION_NAME, Constants::WP_OPTION_NAME);
 }
@@ -166,6 +194,42 @@ function ups_worldwide_express_checkbox()
 {
     checkbox(
         db_setting_name: 'ups_worldwide_express_enabled',
+        db_option_name: Constants::WP_OPTION_NAME,
+        label: ''
+    );
+}
+
+function ups_surepost_canada_checkbox()
+{
+    checkbox(
+        db_setting_name: 'ups_surepost_canada_enabled',
+        db_option_name: Constants::WP_OPTION_NAME,
+        label: ''
+    );
+}
+
+function ups_worldwide_expedited_checkbox()
+{
+    checkbox(
+        db_setting_name: 'ups_worldwide_expedited_enabled',
+        db_option_name: Constants::WP_OPTION_NAME,
+        label: ''
+    );
+}
+
+function ups_worldwide_express_plus_checkbox()
+{
+    checkbox(
+        db_setting_name: 'ups_worldwide_express_plus_enabled',
+        db_option_name: Constants::WP_OPTION_NAME,
+        label: ''
+    );
+}
+
+function ups_worldwide_saver_checkbox()
+{
+    checkbox(
+        db_setting_name: 'ups_worldwide_saver_enabled',
         db_option_name: Constants::WP_OPTION_NAME,
         label: ''
     );

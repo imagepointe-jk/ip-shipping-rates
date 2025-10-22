@@ -124,6 +124,26 @@ function ip_shipping_method_init()
                 'description' => 'UPS Worldwide Express',
                 'enabled' => try_get_option_value('ups_worldwide_express_enabled', Constants::WP_OPTION_NAME)
             ),
+            array(
+                'code' => '93',
+                'description' => 'UPS SurePost (Canada)',
+                'enabled' => try_get_option_value('ups_surepost_canada_enabled', Constants::WP_OPTION_NAME)
+            ),
+            array(
+                'code' => '08',
+                'description' => 'UPS Worldwide Expedited',
+                'enabled' => try_get_option_value('ups_worldwide_expedited_enabled', Constants::WP_OPTION_NAME)
+            ),
+            array(
+                'code' => '54',
+                'description' => 'UPS Worldwide Express Plus',
+                'enabled' => try_get_option_value('ups_worldwide_express_plus_enabled', Constants::WP_OPTION_NAME)
+            ),
+            array(
+                'code' => '65',
+                'description' => 'UPS Worldwide Saver',
+                'enabled' => try_get_option_value('ups_worldwide_saver_enabled', Constants::WP_OPTION_NAME)
+            ),
         ];
         return $services;
     }
