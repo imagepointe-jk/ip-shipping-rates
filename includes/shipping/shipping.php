@@ -15,23 +15,11 @@ function ip_shipping_method_init()
         {
             $this->id                 = 'custom_option'; // Unique ID
             $this->method_title       = __('Custom Option');
-            $this->method_description = __('Custom shipping options (eco, fast, local).');
+            $this->method_description = __('Custom shipping options.');
 
             $this->enabled            = 'yes';
             $this->title              = __('Custom Shipping');
-
-            //$this->init();
         }
-
-        // function init()
-        // {
-        //     // Settings
-        //     $this->init_form_fields();
-        //     $this->init_settings();
-
-        //     // Save settings
-        //     add_action('woocommerce_update_options_shipping_' . $this->id, array($this, 'process_admin_options'));
-        // }
 
         public function calculate_shipping($package = array())
         {
@@ -57,41 +45,40 @@ function ip_shipping_method_init()
             ));
 
             if (is_wp_error($response)) {
-                $logger->info('API request failed: ' . $response->get_error_message(), ['source' => 'ip_shipping_debug']);
+                $logger->warning('API request failed during wp_remote_post(): ' . $response->get_error_message(), ['source' => 'ip_shipping_debug']);
                 return;
             }
 
             $status_code = wp_remote_retrieve_response_code($response);
+            $data = json_decode(wp_remote_retrieve_body($response), true);
             if ($status_code !== 200) {
-                $logger->info('API request failed: Status ' . $status_code, ['source' => 'ip_shipping_debug']);
+                $message = isset($data['message']) ? $data['message'] : 'No message provided';
+                $logger->warning('API request failed with a status of ' . $status_code . '. Message: ' . $message, ['source' => 'ip_shipping_debug']);
                 return;
             }
 
-            $data = json_decode(wp_remote_retrieve_body($response), true);
             for ($i = 0; $i < count($data); $i++) {
+                //pull data from item
                 $item = $data[$i];
+                $service = $item['service'];
+
+                //log info if this service was not able to retrieve a rate
                 if ($item['statusCode'] !== 200) {
+                    $message = isset($item['message']) ? $item['message'] : 'No message provided';
+                    $logger->info('Failed to retrieve a shipping rate for service "' .
+                        $service['Description'] . '". Status code: ' . $item['statusCode'] . '. Message: ' . $message . '.', ['source' => 'ip_shipping_debug']);
                     continue;
                 }
+
                 $item_data = $item['data'];
                 $rateResponse = $item_data['RateResponse'];
                 $ratedShipment = $rateResponse['RatedShipment'];
-                $service = $ratedShipment['Service'];
                 $totalCharges = $ratedShipment['TotalCharges'];
                 $val = $totalCharges['MonetaryValue'];
 
-                $matching_service = null;
-                foreach ($services as $s) {
-                    if ($s['code'] === $service['Code']) {
-                        $matching_service = $s;
-                        break;
-                    }
-                }
-                unset($s);
-
                 $this->add_rate(array(
                     'id' => $this->id . $i,
-                    'label' => $matching_service ? $matching_service['description'] : 'Unknown Shipping Option',
+                    'label' => $service['Description'],
                     'cost' => $val,
                 ));
             }
