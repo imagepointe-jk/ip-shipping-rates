@@ -34,7 +34,6 @@ function ip_shipping_method_init()
             }
 
             $api_url = $proxy_api_url . '/api/shipping/ups/rate/batch';
-            $services = get_ups_services();
 
             //$package contains the shipping info input by the user.
             $body = build_request_body($package);
@@ -201,19 +200,7 @@ function ip_shipping_method_init()
                             ),
                         ),
                         'NumOfPieces' => '1',
-                        'Package' => array(
-                            'PackagingType' => array(
-                                'Code' => '02',
-                                'Description' => 'Packaging'
-                            ),
-                            'PackageWeight' => array(
-                                'UnitOfMeasurement' => array(
-                                    'Code' => 'LBS',
-                                    'Description' => 'Pounds'
-                                ),
-                                'Weight' => '0.02'
-                            )
-                        ),
+                        'Package' => generate_packages($package),
                         'PaymentDetails' => array(
                             'ShipmentCharge' => array(
                                 'Type' => '01',
@@ -232,5 +219,39 @@ function ip_shipping_method_init()
         }
 
         return $body;
+    }
+
+    function generate_packages($package)
+    {
+        $total_weight = 0;
+        foreach ($package['contents'] as $item) {
+            $product = $item['data'];
+            $weight = floatval($product->get_weight());
+            $quantity = $item['quantity'];
+            $total_weight += $weight * $quantity;
+        }
+
+        $weight_per_package = 45;
+        $total_packages = ceil($total_weight / $weight_per_package);
+        $packages = [];
+        $remaining_weight = $total_weight;
+        for ($i = 0; $i < $total_packages; $i++) {
+            $this_weight = $remaining_weight > $weight_per_package ? $weight_per_package : $remaining_weight;
+            $packages[] = array(
+                'PackagingType' => array(
+                    'Code' => '02',
+                    'Description' => 'Packaging'
+                ),
+                'PackageWeight' => array(
+                    'UnitOfMeasurement' => array(
+                        'Code' => 'LBS',
+                        'Description' => 'Pounds'
+                    ),
+                    'Weight' => "$this_weight"
+                )
+            );
+            $remaining_weight -= $this_weight;
+        }
+        return $packages;
     }
 }
