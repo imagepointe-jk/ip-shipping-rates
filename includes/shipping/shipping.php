@@ -201,14 +201,6 @@ function ip_shipping_method_init()
                         ),
                         'NumOfPieces' => '1',
                         'Package' => generate_packages($package),
-                        'PaymentDetails' => array(
-                            'ShipmentCharge' => array(
-                                'Type' => '01',
-                                'BillShipper' => array(
-                                    'AccountNumber' => 'Not Yet Set'
-                                )
-                            )
-                        ),
                         'Service' => array(
                             'Code' => $service['code'],
                             'Description' => $service['description']
