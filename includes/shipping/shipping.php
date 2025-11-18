@@ -34,9 +34,10 @@ function ip_shipping_method_init()
             }
 
             $api_url = $proxy_api_url . '/api/shipping/ups/rate/batch';
+            $ups_account_number = try_get_option_value('ups_account_number', Constants::WP_OPTION_NAME);
 
             //$package contains the shipping info input by the user.
-            $body = build_request_body($package);
+            $body = build_request_body($package, $ups_account_number);
             $response = wp_remote_post($api_url, array(
                 'headers' => array('Content-Type' => 'application/json'),
                 'body' => wp_json_encode($body),
@@ -156,7 +157,7 @@ function ip_shipping_method_init()
         return round($initial_val + ($initial_val * $adjustment_val / 100), 2);
     }
 
-    function build_request_body($package)
+    function build_request_body($package, $ups_account_number)
     {
         $destination = $package['destination'];
         $address = $destination['address'];
@@ -171,7 +172,7 @@ function ip_shipping_method_init()
 
         $body = [];
         foreach ($enabled_services as $service) {
-            $body[] =  array(
+            $body_item =  array(
                 'RateRequest' => array(
                     'Request' => array(
                         'RequestOption' => 'Rate'
@@ -217,6 +218,20 @@ function ip_shipping_method_init()
                     )
                 ),
             );
+
+            if (!empty($ups_account_number)) {
+                $body_item['RateRequest']['Shipment']['PaymentDetails'] = array(
+                    'ShipmentCharge' => array(
+                        'Type' => '01',
+                        'BillShipper' => array(
+                            'AccountNumber' => $ups_account_number
+                        )
+                    )
+                );
+                $body_item['RateRequest']['Shipment']['Shipper']['ShipperNumber'] = $ups_account_number;
+            }
+
+            $body[] = $body_item;
         }
 
         return $body;

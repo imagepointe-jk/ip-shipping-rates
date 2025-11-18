@@ -21,45 +21,25 @@ function settings_init()
         add_option(Constants::WP_OPTION_NAME);
     }
 
-    //a section is registered in admin_init; the fields will be rendered in the template using Settings API
-    //the section has to be registered to make it available to Settings API
+    //MAIN SETTINGS=========================
     add_settings_section(
-        // unique id for section
         id: $main_section_name,
-        //this will be rendered as the section title
         title: 'Main Settings',
-        //this callback will render arbitrary markup below the section title
-        //namespace must be prepended for WP to find the function in this namespace
-        //double backslash because backslash itself is an escape character
         callback: null,
-        //what page the section will be on
         page: Constants::SLUG
     );
     add_settings_section(
-        // unique id for section
         id: $ups_section_name,
-        //this will be rendered as the section title
         title: 'Enabled UPS Services',
-        //this callback will render arbitrary markup below the section title
-        //namespace must be prepended for WP to find the function in this namespace
-        //double backslash because backslash itself is an escape character
         callback: null,
-        //what page the section will be on
         page: Constants::SLUG
     );
 
-    //register a field and assign it to the section we just registered
-    //the field has to be registered to make it available to Settings API
     add_settings_field(
-        //unique id for field
         id: Constants::SLUG . '_proxy_api_url',
-        //this will be rendered as the label of the field
         title: 'Proxy API URL',
-        //this callback will render the markup for the field itself (but not the label or the surrounding markup used for layout)
         callback: __NAMESPACE__ . '\\proxy_api_url_field',
-        //what page the field will be on
         page: Constants::SLUG,
-        //what section the field will be in
         section: $main_section_name,
     );
     add_settings_field(
@@ -69,7 +49,15 @@ function settings_init()
         page: Constants::SLUG,
         section: $main_section_name,
     );
+    add_settings_field(
+        id: Constants::SLUG . '_ups_account_number',
+        title: 'UPS Account Number (optional)', //required to show negotiated rates; otherwise, retail rates will be shown instead
+        callback: __NAMESPACE__ . '\\ups_account_number_field',
+        page: Constants::SLUG,
+        section: $main_section_name,
+    );
 
+    //UPS SERVICES===========================
     add_settings_field(
         id: Constants::SLUG . '_ups_ground_enabled',
         title: 'UPS Ground',
@@ -149,6 +137,14 @@ function proxy_api_url_field()
 {
     text_field(
         db_setting_name: 'proxy_api_url',
+        db_option_name: Constants::WP_OPTION_NAME
+    );
+}
+
+function ups_account_number_field()
+{
+    text_field(
+        db_setting_name: 'ups_account_number',
         db_option_name: Constants::WP_OPTION_NAME
     );
 }
