@@ -9,6 +9,7 @@ if (!defined('ABSPATH')) exit;
 use IPShippingRates\Constants;
 use function ImagePointe\Utils\Fields\text_field;
 use function ImagePointe\Utils\Fields\checkbox;
+use function ImagePointe\Utils\Fields\number_field;
 
 function settings_init()
 {
@@ -59,6 +60,13 @@ function settings_init()
         //what page the field will be on
         page: Constants::SLUG,
         //what section the field will be in
+        section: $main_section_name,
+    );
+    add_settings_field(
+        id: Constants::SLUG . '_universal_price_adjustment',
+        title: 'Universal Price Adjustment (%)',
+        callback: __NAMESPACE__ . '\\universal_price_adjustment_field',
+        page: Constants::SLUG,
         section: $main_section_name,
     );
 
@@ -142,6 +150,14 @@ function proxy_api_url_field()
     text_field(
         db_setting_name: 'proxy_api_url',
         db_option_name: Constants::WP_OPTION_NAME
+    );
+}
+
+function universal_price_adjustment_field()
+{
+    number_field(
+        db_setting_name: 'universal_price_adjustment',
+        db_option_name: Constants::WP_OPTION_NAME,
     );
 }
 

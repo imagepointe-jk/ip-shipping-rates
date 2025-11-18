@@ -56,6 +56,8 @@ function ip_shipping_method_init()
                 return;
             }
 
+            $universal_price_adjustment = try_get_option_value('universal_price_adjustment', Constants::WP_OPTION_NAME);
+            if (!$universal_price_adjustment) $universal_price_adjustment = 0;
             for ($i = 0; $i < count($data); $i++) {
                 //pull data from item
                 $item = $data[$i];
@@ -74,11 +76,12 @@ function ip_shipping_method_init()
                 $ratedShipment = $rateResponse['RatedShipment'];
                 $totalCharges = $ratedShipment['TotalCharges'];
                 $val = $totalCharges['MonetaryValue'];
+                $adjusted_val = adjust_price($val, $universal_price_adjustment);
 
                 $this->add_rate(array(
                     'id' => $this->id . $i,
                     'label' => $service['Description'],
-                    'cost' => $val,
+                    'cost' => $adjusted_val,
                 ));
             }
         }
@@ -145,6 +148,12 @@ function ip_shipping_method_init()
             ),
         ];
         return $services;
+    }
+
+    function adjust_price($initial_val, $adjustment_val)
+    {
+        if ($adjustment_val <= -100) return 0;
+        return round($initial_val + ($initial_val * $adjustment_val / 100), 2);
     }
 
     function build_request_body($package)

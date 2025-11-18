@@ -20,6 +20,18 @@ if (!function_exists(__NAMESPACE__ . '\text_field')) {
     }
 }
 
+if (!function_exists(__NAMESPACE__ . '\number_field')) {
+    function number_field(string $db_setting_name, string $db_option_name, string $id_prefix = 'custom_field')
+    {
+        $value = try_get_option_value($db_setting_name, $db_option_name);
+        $field_name = $db_option_name . '[' . $db_setting_name . ']';
+        $field_id = $id_prefix . '_' . $db_setting_name;
+    ?>
+        <input type="number" id="<?php echo $field_id; ?>" name="<?php echo $field_name; ?>" value="<?php echo $value; ?>">
+    <?php
+    }
+}
+
 if (!function_exists(__NAMESPACE__ . '\text_area')) {
     function text_area(string $db_setting_name, string $db_option_name, string $id_prefix = 'custom_field', int $rows = 5, int $cols = 50)
     {
