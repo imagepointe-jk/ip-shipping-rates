@@ -19,3 +19,4 @@ include(plugin_dir_path(__FILE__) . 'includes/utils/fields.php');
 include(plugin_dir_path(__FILE__) . 'includes/settings.php');
 include(plugin_dir_path(__FILE__) . 'includes/menus.php');
 include(plugin_dir_path(__FILE__) . 'includes/shipping/shipping.php');
+include(plugin_dir_path(__FILE__) . 'includes/shipping/checkout.php');
