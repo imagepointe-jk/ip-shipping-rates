@@ -12,6 +12,7 @@ if (!defined('WPINC')) {
 }
 
 define('IP_SHIPPING_RATES_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('IP_SHIPPING_RATES_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 include(plugin_dir_path(__FILE__) . 'includes/constants.php');
 include(plugin_dir_path(__FILE__) . 'includes/utils/misc.php');
