@@ -58,7 +58,6 @@ function ip_shipping_method_init()
             }
 
             $universal_price_adjustment = try_get_option_value('universal_price_adjustment', Constants::WP_OPTION_NAME);
-            $insurance = WC()->session->get('ip_shipping_insurance');
             if (!$universal_price_adjustment) $universal_price_adjustment = 0;
             for ($i = 0; $i < count($data); $i++) {
                 //pull data from item
@@ -79,9 +78,6 @@ function ip_shipping_method_init()
                 $totalCharges = $ratedShipment['TotalCharges'];
                 $val = $totalCharges['MonetaryValue'];
                 $adjusted_val = adjust_price($val, $universal_price_adjustment);
-                $TEMP_INSURANCE_AMOUNT = 42;
-
-                if ($insurance === 'yes') $adjusted_val += $TEMP_INSURANCE_AMOUNT;
 
                 $this->add_rate(array(
                     'id' => $this->id . $i,
