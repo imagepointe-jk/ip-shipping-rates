@@ -121,13 +121,6 @@ function settings_init()
         page: Constants::SLUG,
         section: $ups_section_name,
     );
-    add_settings_field(
-        id: Constants::SLUG . '_ups_worldwide_saver_enabled',
-        title: 'UPS Worldwide Saver',
-        callback: __NAMESPACE__ . '\\ups_worldwide_saver_checkbox',
-        page: Constants::SLUG,
-        section: $ups_section_name,
-    );
 
     register_setting(Constants::WP_OPTION_NAME, Constants::WP_OPTION_NAME);
 }
@@ -233,15 +226,6 @@ function ups_worldwide_express_plus_checkbox()
 {
     checkbox(
         db_setting_name: 'ups_worldwide_express_plus_enabled',
-        db_option_name: Constants::WP_OPTION_NAME,
-        label: ''
-    );
-}
-
-function ups_worldwide_saver_checkbox()
-{
-    checkbox(
-        db_setting_name: 'ups_worldwide_saver_enabled',
         db_option_name: Constants::WP_OPTION_NAME,
         label: ''
     );
